@@ -3,6 +3,7 @@
 - [ディレクトリ構成 & アーキテクチャ](#directory-and-architecture)
 - [Vue.js - パスの指定方法](#vue-path)
 - [HTML - v-for](#html-v-for)
+- [TypeScript - 関数](#ts-function)
 - [JavaScript - 宣言](#js-declaret)
 - [JavaScript - export/import](#js-export-import)
 - [JavaScript - 関数](#js-function)
@@ -87,6 +88,38 @@ import FooComponent from "./components/FooComponent.vue";
 
 <!-- bad -->
 <div v-for="item of list"></div>
+```
+
+## TypeScript - 関数
+
+<a name="ts-function"></a>
+
+- 戻り値がない関数(またはそもそも呼び出し元へ戻らない関数)は以下のとおり定義すること。
+
+```typescript
+// good
+const print = (message: string): void => {
+  console.log(message); // returnを省略できる(戻り値がないため)
+}
+
+// bad
+const print = (message: string): undefined => {
+  console.log(message);
+  return undefined;
+}
+
+// good - 戻り値がundefinedを含みうる関数の場合は、undefined型を含んだユニオン型を指定する
+const getIfExists = (numbers: number[], search: number): number | undefined => {
+  if (numbers.includes(search)) {
+    return search;
+  }
+  return undefined;
+}
+
+// good - 呼び出し元へ戻らない(エラー等)場合はneverを指定
+const kansu = (): never => {
+  throw new Error("Error");
+}
 ```
 
 ## JavaScript - 宣言

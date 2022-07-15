@@ -1,7 +1,7 @@
 # 目次
 
 - [ディレクトリ構成 & アーキテクチャ](#directory-and-architecture)
-- [Vue.js(3のみ) - コード記述方法](#vue-code)
+- [Vue.js(3のみ) - コード記述方法(script setup構文)](#vue-code)
 - [Vue.js - パスの指定方法](#vue-path)
 - [HTML - v-for](#html-v-for)
 - [TypeScript - 関数](#ts-function)
@@ -51,7 +51,7 @@
 
     再利用可能な部品
 
-## Vue.js(3のみ) - コード記述方法
+## Vue.js(3のみ) - コード記述方法(script setup構文)
 
 <a name="vue-code"></a>
 
@@ -62,6 +62,17 @@
   > [参考] https://v3.ja.vuejs.org/api/sfc-script-setup.html
 
   > [参考その2](https://qiita.com/__Nem__/items/18afc73e1640e0a3274d)
+
+- 必ず順序は以下のとおり記述する。
+  **[理由]** eslintのconfigで `"vue/setup-compiler-macros": true` としており、エラーが出るため
+
+  ```html5
+  // good
+  <script setup lang="ts">
+
+  // bad
+  <script lang="ts" setup>
+  ```
 
 ## Vue.js - パスの指定方法
 
@@ -412,10 +423,23 @@ const actions = {
 // good - defineEmits関数を使う
 // (<script setup> 内でのみ使用可能なコンパイラマクロのためimportは必要なし)
 <script setup lang="ts">
-defineEmits<{
+interface Emits {
+  (e: "change", value: string): void;
+  (e: "close", value: string): void;
+}
+
+const emit = defineEmits<{
   (e: 'changeMode', modeName: string ): void
-}>()
-</scripscript>
+}>();
+
+const emit = defineEmits<Emits>();
+// JavaScriptの場合
+// const emit = defineEmits(['change', 'close']);
+
+const handleChange = (value: string) => {
+  emit("change", value);
+};
+</script>
 
 // bad
 <script lang="ts">
@@ -443,9 +467,15 @@ export default defineComponent({
 // (<script setup> 内でのみ使用可能なコンパイラマクロのためimportなし)
 <script setup lang="ts">
 import Hoge from '@/hoge.ts'
+interface Props {
+  text: string;
+}
 const props = defineProps<{
   hoge: Hoge,
-}>()
+}>();
+
+const props = defineProps<Props>();
+console.log(props.text);
 </script>
 
 // bad

@@ -12,7 +12,6 @@
 - [JavaScript - axios](#js-axios)
 - [JavaScript - Vuex](#js-vuex)
 - [JavaScript - モジュールファイルの定義方法](#js-module)
-- [JavaScript(コンポーネントオプション) - emit](#jsvue-emit)
 - [JavaScript(コンポーネントオプション) - props](#jsvue-props)
 - [JavaScript(コンポーネントオプション) - methods](#jsvue-methods)
 - [JavaScript(コンポーネントオプション) - data](#jsvue-data)
@@ -535,12 +534,58 @@ export default {
 
 <a name="jsvue-data"></a>
 
+
+### **【Vue3】**
+
+- **data**
+
+```typescript
+// good
+// TODO: script setup でのdata記法
+
+
+// bad
+<script lang="ts">
+import { defineComponent, ref, reactive } from "vue";
+// 変数の型定義
+interface Data {
+  isClick: boolean;
+}
+export default defineComponent({
+  setup() {
+    // 【ref(=data)の初期値定義】
+    // 単体のdataの場合は`ref`を使う
+    const isEnable = ref<boolean>(false);
+
+    // interfaceの場合は`reactive`を使う
+    const state = reactive<Data>({
+      isClick: false,
+    });
+
+    return {
+      isEnable,
+      state,
+    };
+  },
+});
+</script>
+```
+
+### **【Vue2】**
+
 - ES2015(ES6)で導入された**短縮形**を用いる
 
 ```javascript
+// TypeScriptの場合
+interface Data {
+  name: string;
+  age: number;
+}
+
 export default {
   // good
   data() {
+  // data: (): Data => { // TypeScriptの場合
     return {
       name: "太郎",
       age: 10,

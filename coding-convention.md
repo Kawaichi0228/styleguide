@@ -55,9 +55,13 @@
 
 <a name="vue-code"></a>
 
-- script setup構文(※)　`<script setup lang="ts">` を使う。Composition APIはSFC内では使わない。
+- vue3.2から追加されたscript setup構文(※)　`<script setup lang="ts">` を使う。Composition APIはSFC内では使わない。
 
   (※) 単一ファイルコンポーネント（SFC: Single File Components）内で Composition API を使用するコンパイル時のシンタックスシュガー
+
+  > [参考] https://v3.ja.vuejs.org/api/sfc-script-setup.html
+
+  > [参考その2](https://qiita.com/__Nem__/items/18afc73e1640e0a3274d)
 
 ## Vue.js - パスの指定方法
 
@@ -411,7 +415,7 @@ const actions = {
 defineEmits<{
   (e: 'changeMode', modeName: string ): void
 }>()
-</script>
+</scripscript>
 
 // bad
 <script lang="ts">

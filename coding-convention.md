@@ -1,6 +1,7 @@
 # 目次
 
 - [ディレクトリ構成 & アーキテクチャ](#directory-and-architecture)
+- [Vue.js(3のみ) - コード記述方法](#vue-code)
 - [Vue.js - パスの指定方法](#vue-path)
 - [HTML - v-for](#html-v-for)
 - [TypeScript - 関数](#ts-function)
@@ -11,6 +12,7 @@
 - [JavaScript - axios](#js-axios)
 - [JavaScript - Vuex](#js-vuex)
 - [JavaScript - モジュールファイルの定義方法](#js-module)
+- [JavaScript(コンポーネントオプション) - emit](#jsvue-emit)
 - [JavaScript(コンポーネントオプション) - props](#jsvue-props)
 - [JavaScript(コンポーネントオプション) - methods](#jsvue-methods)
 - [JavaScript(コンポーネントオプション) - data](#jsvue-data)
@@ -36,10 +38,10 @@
 
   ※ただし、`pages` は `views` に名前を変更する
 
-  > [参考] https://qiita.com/tockn/items/2ce68b99e0839df52200)
+  > [参考] <https://qiita.com/tockn/items/2ce68b99e0839df52200>)
 
   - **layouts**
-    
+
     src/router/index.tsにimportされるレイアウト
 
   - **views**
@@ -49,6 +51,14 @@
   - **components**
 
     再利用可能な部品
+
+## Vue.js(3のみ) - コード記述方法
+
+<a name="vue-code"></a>
+
+- script setup構文(※)　`<script setup lang="ts">` を使う。Composition APIはSFC内では使わない。
+
+  (※) 単一ファイルコンポーネント（SFC: Single File Components）内で Composition API を使用するコンパイル時のシンタックスシュガー
 
 ## Vue.js - パスの指定方法
 
@@ -72,7 +82,7 @@ import FooComponent from "./components/FooComponent.vue";
 
 - 複数レイアウトの実装には、高階コンポーネントを使用する。
 
-  > [参考] https://www.m3tech.blog/entry/vue-hoc-layout
+  > [参考] <https://www.m3tech.blog/entry/vue-hoc-layout>
 
   ※公式の [「ネストされたルート」](https://v3.router.vuejs.org/ja/guide/essentials/nested-routes.html)は使用しない。
 
@@ -166,7 +176,7 @@ import fooExport from "@/utils/foo-export";
 
 - `export` は変数・関数定義と同時に行う。ただし、ライブラリ(Vuex 等)の仕様上、定義後の `export` が必要な場合には許可する。
 - また、`named export/import` におけるエイリアスは禁止とする。
-  > [参考] https://engineering.linecorp.com/ja/blog/you-dont-need-default-export/
+  > [参考] <https://engineering.linecorp.com/ja/blog/you-dont-need-default-export/>
 
 ```javascript
 // good
@@ -267,11 +277,11 @@ export default axios.create({
 
 - **Repository Factory パターン** を採用する
 
-> [参考] https://qiita.com/07JP27/items/0923cbe3b6435c19d761
+> [参考] <https://qiita.com/07JP27/items/0923cbe3b6435c19d761>
 
 ### 通信処理、例外処理、レスポンスデータの受取
 
-> [参考] https://www.sukerou.com/2019/05/axios.html
+> [参考] <https://www.sukerou.com/2019/05/axios.html>
 
 - 通信処理は、以下の記法を採用する。
 
@@ -336,7 +346,7 @@ console.log(data)
 
 - 通信処理の記述は pages globals のみとする(parts は行わない)
 
-  > [参考] https://qiita.com/tockn/items/2ce68b99e0839df52200)
+  > [参考] <https://qiita.com/tockn/items/2ce68b99e0839df52200>)
 
 ### getters
 
@@ -344,7 +354,7 @@ console.log(data)
 
   **[理由]** `this.$store.state` を使うと、`mutation` を介さずに直接 `state` を変更できてしまうため。
 
-  > [参考] https://uncle-javascript.com/vuex-getters
+  > [参考] <https://uncle-javascript.com/vuex-getters>
 
 ```javascript
 // example - Vuex Module
@@ -387,9 +397,93 @@ const actions = {
 };
 ```
 
+## JavaScript(コンポーネントオプション) - emit
+
+<a name="jsvue-emit"></a>
+
+### **【Vue3】**
+
+- **emit**
+
+```typescript
+// good - defineEmits関数を使う
+// (<script setup> 内でのみ使用可能なコンパイラマクロのためimportは必要なし)
+<script setup lang="ts">
+defineEmits<{
+  (e: 'changeMode', modeName: string ): void
+}>()
+</script>
+
+// bad
+<script lang="ts">
+import { defineComponent } from 'vue'
+export default defineComponent({
+  emit: {
+    changeMode(payload: { modeName: string }) {
+      return modeName
+    }
+  }
+})
+</script>
+```
+
 ## JavaScript(コンポーネントオプション) - props
 
 <a name="jsvue-props"></a>
+
+### **【Vue3】**
+
+- **props(defalutなし)**
+
+```typescript
+// good - defineProps関数を使う
+// (<script setup> 内でのみ使用可能なコンパイラマクロのためimportなし)
+<script setup lang="ts">
+import Hoge from '@/hoge.ts'
+const props = defineProps<{
+  hoge: Hoge,
+}>()
+</script>
+
+// bad
+<script lang="ts">
+import { defineComponent } from 'vue'
+import Hoge from '@/hoge.ts'
+export default defineComponent({
+  props: {
+    hoge: Object as () => Hoge
+  },
+})
+</script>
+```
+
+- **props(defalutあり)**
+
+```typescript
+// good - withDefaults関数を使う
+<script setup lang="ts">
+interface Hoge {
+  text: string
+  num: number
+}
+const props = withDefaults(defineProps<{ hoge?: Hoge }>(), {
+  hoge: { text: "defalut value", num: 100 },
+})
+</script>
+
+// bad
+<script lang="ts">
+import { defineComponent } from 'vue'
+export default defineComponent({
+  props: {
+    text: { type: String, default: "defalut value" },
+    num: { type: Number, default: 100 },
+  },
+})
+</script>
+```
+
+### **【Vue2】**
 
 - `type` 及び `required` は必ず指定すること。
 
@@ -575,37 +669,37 @@ export default {
 
 - 単位は以下のとおり使い分けるものとする。
 
-  > [参考] https://pengi-n.co.jp/blog/unit/
+  > [参考] <https://pengi-n.co.jp/blog/unit/>
 
-  ### **[絶対値]**
+### **[絶対値]**
 
-  #### px
+#### px
 
-  - boder などの可変させたくない要素
+- boder などの可変させたくない要素
 
-  ### **[相対値]**
+### **[相対値]**
 
-  #### rem
+#### rem
 
-  - フォントサイズ
-  - height, width
-  - margin, padding
+- フォントサイズ
+- height, width
+- margin, padding
 
-  #### em
+#### em
 
-  - letter-spacing
-  - 擬似要素との間隔
+- letter-spacing
+- 擬似要素との間隔
 
-  #### %
+#### %
 
-  - 親要素にあたる包含的な container 要素
-  - 画面幅いっぱいに表示させたい要素
+- 親要素にあたる包含的な container 要素
+- 画面幅いっぱいに表示させたい要素
 
-  #### vw, vh
+#### vw, vh
 
   (※vw: Viewport Width, vh: Viewport Height)
 
-  - ヒーローイメージやモーダルウィンドウ など画面を占有して表示させる要素
+- ヒーローイメージやモーダルウィンドウ など画面を占有して表示させる要素
 
 ## Gin - ハンドラー関数
 
@@ -702,22 +796,22 @@ const res = await axios.get("foo");
 <a name="gin-middle-ware"></a>
 
 ```go
-	// -------------------------------------------------------------------------
-	// ミドルウェアをリクエストメソッドに適用 ※必ず、適用させたいメソッドの"前"に記述すること
-	// -------------------------------------------------------------------------
-	// 全てのルーティングのリクエストメソッドに対して前後処理(ミドルウェア)を適用
-	r.Use(FooCustomMiddleWare)
+ // -------------------------------------------------------------------------
+ // ミドルウェアをリクエストメソッドに適用 ※必ず、適用させたいメソッドの"前"に記述すること
+ // -------------------------------------------------------------------------
+ // 全てのルーティングのリクエストメソッドに対して前後処理(ミドルウェア)を適用
+ r.Use(FooCustomMiddleWare)
 
-	// 特定のルーティングのリクエストメソッドに対して前後処理(ミドルウェア)を適用
-	// - 特定のルーティングに適用したい場合
-	r.GET("/middle-test1", FooCustomMiddleWare, FooHandlerFunc)
+ // 特定のルーティングのリクエストメソッドに対して前後処理(ミドルウェア)を適用
+ // - 特定のルーティングに適用したい場合
+ r.GET("/middle-test1", FooCustomMiddleWare, FooHandlerFunc)
 
-	// - 特定のルーティンググループにまとめて適用したい場合
-	middletest := r.Group("/middle-test2")
-	middletest.Use(FooCustomMiddleWare)
-	{
-		middletest.GET("/", FooHandlerFunc)
-	}
+ // - 特定のルーティンググループにまとめて適用したい場合
+ middletest := r.Group("/middle-test2")
+ middletest.Use(FooCustomMiddleWare)
+ {
+  middletest.GET("/", FooHandlerFunc)
+ }
 
     // -------------------------------------------------------------------------
     // カスタムミドルウェア

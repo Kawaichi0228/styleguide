@@ -14,6 +14,11 @@
 - フォルダ名: `/kebab-case`
 - .vue 以外のファイル名: `kebab-case.js` , `kebab-case.img`
 - .vue ファイル名(コンポーネント名): `PascalCase.vue`
+  - ケバブケースではなくパスカルケースを使う
+  
+    **[理由]** 公式がケバブケースよりパスカルケースを推奨しているため
+
+    >  [参考] https://vuejs.org/api/sfc-script-setup.html#using-components
 
   - 必ず複数単語にする(HTML タグとの衝突防止)
   - 親子関係の場合、親の名前を prefix する

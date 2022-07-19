@@ -4,7 +4,9 @@
 - [Vue.js(3のみ) - コード記述方法(script setup構文)](#vue-code)
 - [Vue.js - パスの指定方法](#vue-path)
 - [HTML - v-for](#html-v-for)
-- [TypeScript - 関数](#ts-function)
+- [TypeScript - 列挙体](#ts-enum)
+- [TypeScript - 複数の型定義](#ts-type-define)
+- [TypeScript - 関数の型定義](#ts-function)
 - [JavaScript - 宣言](#js-declaret)
 - [JavaScript - export/import](#js-export-import)
 - [JavaScript - 関数](#js-function)
@@ -64,6 +66,7 @@
   > [参考その2](https://qiita.com/__Nem__/items/18afc73e1640e0a3274d)
 
 - 必ず順序は以下のとおり記述する。
+
   **[理由]** eslintのconfigで `"vue/setup-compiler-macros": true` としており、エラーが出るため
 
   ```html5
@@ -114,7 +117,53 @@ import FooComponent from "./components/FooComponent.vue";
 <div v-for="item of list"></div>
 ```
 
-## TypeScript - 関数
+## TypeScript - 列挙体
+
+<a name="ts-enum"></a>
+
+- Enumは使わず、const assertion + union型の組合せを使う
+
+> [参考] https://www.cyokodog.net/blog/typescript-enum-replacement/
+
+```typescript
+
+// good
+const Color = {
+  None: 0,
+  Red: 1,
+  Black: 2,
+} as const; // as constでリテラル化(const assertion)
+type Color = typeof Color[keyof typeof Color]; // type Color = 0 | 1 | 2 と同じ
+
+// bad
+enum Color {
+  None, // 0
+  Red, // 1
+  Black, // 2
+}
+```
+
+## TypeScript - 複数の型定義
+
+<a name="ts-type-define"></a>
+
+- 複数の型の定義には、`type` (Type Alias)を使うこと。(interfaceは使わない。)
+
+```typescript
+// good
+type book = {
+  title: string;
+  pages: number;
+};
+
+// bad
+interface book {
+  title: string;
+  pages: number;
+}
+```
+
+## TypeScript - 関数の型定義
 
 <a name="ts-function"></a>
 
@@ -423,10 +472,10 @@ const actions = {
 // good - defineEmits関数を使う
 // (<script setup> 内でのみ使用可能なコンパイラマクロのためimportは必要なし)
 <script setup lang="ts">
-interface Emits {
+type Emits = {
   (e: "change", value: string): void;
   (e: "close", value: string): void;
-}
+};
 
 const emit = defineEmits<{
   (e: 'changeMode', modeName: string ): void
@@ -466,15 +515,10 @@ export default defineComponent({
 // good - defineProps関数を使う
 // (<script setup> 内でのみ使用可能なコンパイラマクロのためimportなし)
 <script setup lang="ts">
-import Hoge from '@/hoge.ts'
-interface Props {
+type Props = {
   text: string;
-}
-const props = defineProps<{
-  hoge: Hoge,
-}>();
-
-const props = defineProps<Props>();
+};
+defineProps<Props>();
 console.log(props.text);
 </script>
 
@@ -495,12 +539,14 @@ export default defineComponent({
 ```typescript
 // good - withDefaults関数を使う
 <script setup lang="ts">
-interface Hoge {
-  text: string
-  num: number
+import { withDefaults } from 'vue'
+type Props {
+  msg?: string
+  labels?: string[]
 }
-const props = withDefaults(defineProps<{ hoge?: Hoge }>(), {
-  hoge: { text: "defalut value", num: 100 },
+withDefaults(defineProps<Props>(), {
+  msg: 'hello',
+  labels: () => ['one', 'two']
 })
 </script>
 
@@ -575,23 +621,22 @@ export default {
 
 ```typescript
 // good
-// TODO: script setup でのdata記法
-
+// ※特に記述は必要なし(<script setup>タグ内に書く)
 
 // bad
 <script lang="ts">
 import { defineComponent, ref, reactive } from "vue";
 // 変数の型定義
-interface Data {
+type Data = {
   isClick: boolean;
-}
+};
 export default defineComponent({
   setup() {
     // 【ref(=data)の初期値定義】
     // 単体のdataの場合は`ref`を使う
     const isEnable = ref<boolean>(false);
 
-    // interfaceの場合は`reactive`を使う
+    // interface(type)の場合は`reactive`を使う
     const state = reactive<Data>({
       isClick: false,
     });
@@ -611,10 +656,10 @@ export default defineComponent({
 
 ```javascript
 // TypeScriptの場合
-interface Data {
+type Data = {
   name: string;
   age: number;
-}
+};
 
 export default {
   // good
